@@ -1,0 +1,63 @@
+
+<style>
+  h1 {
+    margin-bottom: 20px;
+    font: 20px/1.5 sans-serif;
+  }
+
+  .terminal {
+    float: left;
+    border: #000 solid 5px;
+    font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+    font-size: 11px;
+    color: #f0f0f0;
+    background: #000;
+  }
+
+  .reverse-video {
+    color: #000;
+    background: #f0f0f0;
+  }
+</style>
+<script src="/socket.io/socket.io.js"></script>
+<script src="term.js"></script>
+<script>
+    //https://github.com/chjj/tty.js/blob/master/static/term.js
+
+    var socket = io.connect();
+    var cols=40;
+    var rows=100;
+    var term_count=0;
+
+
+    socket.emit('host', prompt('Host:'))
+
+    socket.on('get-password', function () {
+        socket.emit('send-password', prompt('Password:'));
+    })
+
+    socket.on('get-username', function () {
+        socket.emit('send-username', prompt('Username:'));
+    })
+
+
+
+    socket.on('create-term', function () {
+        var term = new Terminal(rows, cols);
+        term_count++;
+        options = { Rows: rows, Cols: cols, Terms: term_count };
+        socket.emit('create-ssh', options);
+        term.on('data', function (data) {
+            socket.emit('data', data);
+        });
+
+        term.open();
+
+        socket.on('data', function (data) {
+            term.write(data);
+        });
+    });
+
+
+
+</script>
