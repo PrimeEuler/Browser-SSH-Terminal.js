@@ -1,4 +1,5 @@
 SSH-Browser-Terminal
 ====================
 
-browser based SSH terminal
+A trivial example of a SSH terminal in your browser using node.js and express.io. Based on Fabrice
+Bellard's vt100 for [jslinux](http://bellard.org/jslinux/).
