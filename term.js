@@ -738,12 +738,15 @@ Terminal.prototype.bindMouse = function() {
   // allow mousewheel scrolling in
   // the shell for example
   on(el, wheelEvent, function(ev) {
+    if (!ev) /* For IE. */
+            ev = window.event;
+
     if (self.mouseEvents) return;
     if (self.applicationKeypad) return;
     if (ev.type === 'DOMMouseScroll') {
       self.scrollDisp(ev.detail < 0 ? -5 : 5);
     } else {
-      self.scrollDisp(ev.wheelDeltaY > 0 ? -5 : 5);
+      self.scrollDisp(ev.wheelDelta > 0 ? -5 : 5); /*wheelDelta For IE. */
     }
     return cancel(ev);
   });
@@ -898,8 +901,9 @@ Terminal.prototype.refresh = function(start, end) {
     }
 
     this.children[y].innerHTML = out;
+    
   }
-
+  //console.log( this.element.innerText);
   if (parent) parent.appendChild(this.element);
 };
 
@@ -975,6 +979,7 @@ Terminal.prototype.scroll = function() {
 };
 
 Terminal.prototype.scrollDisp = function(disp) {
+
   this.ydisp += disp;
 
   if (this.ydisp > this.ybase) {
@@ -1003,7 +1008,8 @@ Terminal.prototype.write = function(data) {
   // this.log(JSON.stringify(data.replace(/\x1b/g, '^[')));
 
   for (; i < l; i++) {
-    ch = data[i];
+    //ch = data[i];
+    ch = data.charAt(i);//IE fix
     switch (this.state) {
       case normal:
         switch (ch) {
@@ -4141,11 +4147,27 @@ Terminal.charsets.ISOLatin = null; // /A
  */
 
 function on(el, type, handler, capture) {
-  el.addEventListener(type, handler, capture || false);
+
+ if (el.addEventListener){
+    el.addEventListener(type, handler, capture || false); 
+  } else if (el.attachEvent){
+  if(type == 'onmousewheel' || type == 'mousewheel' || type ==  'DOMMouseScroll')
+  {
+   window.onmousewheel = document.onmousewheel = handler;
+  }
+  else{
+    el.attachEvent('on'+type, handler);//IE handler
+    }
+  }
 }
 
 function off(el, type, handler, capture) {
-  el.removeEventListener(type, handler, capture || false);
+ el.removeEventListener(type, handler, capture);
+  if (el.removeEventListener){
+    el.removeEventListener(type, handler, capture || false); 
+  } else if (el.removeEvent){
+    el.removeEvent('on'+type, handler);//IE handler
+  }
 }
 
 function cancel(ev) {
