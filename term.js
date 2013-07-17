@@ -389,7 +389,7 @@ Terminal.prototype.open = function() {
     self.element.contentEditable = 'true';
     setTimeout(function() {
       self.element.contentEditable = 'inherit'; // 'false';
-    }, 1);
+    }, 1000);//extended to allow for copy/paste menu
   }, true);
 
   on(this.element, 'paste', function(ev) {
