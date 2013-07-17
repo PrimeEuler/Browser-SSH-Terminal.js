@@ -9,7 +9,7 @@ Requirements:
 
 * [node.js](http://nodejs.org/) -- v0.8.7 or newer
 * [ssh2](https://github.com/mscdex/ssh2)
-* {express.io](https://github.com/techpines/express.io)
+* [express.io](https://github.com/techpines/express.io)
 
 Install:
 ```bash
