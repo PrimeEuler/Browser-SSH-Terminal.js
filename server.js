@@ -4,11 +4,28 @@ var Connection = require('ssh2'),
 //https://github.com/techpines/express.io
 //https://github.com/mscdex/ssh2
 //https://github.com/chjj/tty.js/blob/master/static/term.js
+//http://www.gettingcirrius.com/2012/06/automating-creation-of-certificate.html
+//http://www.gettingcirrius.com/2012/06/securing-nodejs-and-express-with-ssl.html
 /*
 options = {
-    key: fs.readFileSync('./ssl/myServer.key'),
-    cert: fs.readFileSync('./ssl/myServer.crt'),
-    passphrase: 'password'
+    // Specify the key file for the server
+  key: fs.readFileSync('ssl/server/keys/server1.key'),
+  
+  // Specify the certificate file
+  cert: fs.readFileSync('ssl/server/certificates/server1.crt'),
+  
+  // Specify the Certificate Authority certificate
+  ca: fs.readFileSync('ssl/ca/ca.crt'),
+  
+  // This is where the magic happens in Node.  All previous
+  // steps simply setup SSL (except the CA).  By requesting
+  // the client provide a certificate, we are essentially
+  // authenticating the user.
+  requestCert: true,
+  
+  // If specified as "true", no unauthenticated traffic
+  // will make it to the route specified.
+  rejectUnauthorized: true
 }
 app = express().https(options).io()
 */
