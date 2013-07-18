@@ -24,3 +24,14 @@ Connect:
 ```bash
 http://localhost:8080
 ```
+
+Todo:
+```bash
+Branch:
+WEB-CLI session management of:
+SSH     - https://github.com/mscdex/ssh2
+TELNET  - https://github.com/kanaka/websockify - https://github.com/kanaka/websockify/blob/master/wstelnet.html
+SNMP    - https://bitbucket.org/stephenwvickers/node-net-snmp
+ICMP    - https://bitbucket.org/stephenwvickers/node-net-ping
+RAW     - https://bitbucket.org/stephenwvickers/node-raw-socket
+```
