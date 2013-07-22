@@ -30,9 +30,10 @@ Todo:
 Fork:
 WEB-CLI session management of:
 SSH     - https://github.com/mscdex/ssh2
-TELNET  - https://github.com/kanaka/websockify - https://github.com/kanaka/websockify/blob/master/wstelnet.html
+TELNET  - https://github.com/kanaka/websockify 
 SNMP    - https://github.com/calmh/node-snmp-native
-ICMP    - https://bitbucket.org/stephenwvickers/node-net-ping
-RAW     - https://bitbucket.org/stephenwvickers/node-raw-socket
+        - https://npmjs.org/package/net-snmp
+ICMP    - https://npmjs.org/package/net-ping
+RAW     - https://npmjs.org/package/raw-socket
 VNC     - https://github.com/bgaff/vnc.js
 ```
