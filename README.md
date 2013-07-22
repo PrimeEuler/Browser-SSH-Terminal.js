@@ -31,7 +31,7 @@ Fork:
 WEB-CLI session management of:
 SSH     - https://github.com/mscdex/ssh2
 TELNET  - https://github.com/kanaka/websockify - https://github.com/kanaka/websockify/blob/master/wstelnet.html
-SNMP    - https://bitbucket.org/stephenwvickers/node-net-snmp
+SNMP    - https://github.com/calmh/node-snmp-native
 ICMP    - https://bitbucket.org/stephenwvickers/node-net-ping
 RAW     - https://bitbucket.org/stephenwvickers/node-raw-socket
 VNC     - https://github.com/bgaff/vnc.js
