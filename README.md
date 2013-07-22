@@ -28,7 +28,7 @@ http://localhost:8080
 Todo:
 ```bash
 Fork:
-WEB-CLI session management of:
+(Network management system) WEB-CLI session management and scripting of:
 SSH     - https://github.com/mscdex/ssh2
 TELNET  - https://github.com/kanaka/websockify 
 SNMP    - https://github.com/calmh/node-snmp-native
