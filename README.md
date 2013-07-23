@@ -33,7 +33,7 @@ SSH             - https://github.com/mscdex/ssh2
 TELNET          - https://github.com/kanaka/websockify 
 SNMP            - https://github.com/calmh/node-snmp-native
                 - https://npmjs.org/package/net-snmp
-MIB-Parse-Lexer - https://github.com/PrimeEuler/MIB-Parser.js
+MIB-Parser-Lexer - https://github.com/PrimeEuler/MIB-Parser.js
 ICMP            - https://npmjs.org/package/net-ping
 RAW             - https://npmjs.org/package/raw-socket
 VNC             - https://github.com/bgaff/vnc.js
