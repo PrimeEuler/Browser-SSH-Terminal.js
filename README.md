@@ -29,12 +29,12 @@ Todo:
 ```bash
 Fork:
 (Network management system) WEB-CLI session management and scripting of:
-SSH     - https://github.com/mscdex/ssh2
-TELNET  - https://github.com/kanaka/websockify 
-SNMP    - https://github.com/calmh/node-snmp-native
-        - https://npmjs.org/package/net-snmp
-        - mib parser?
-ICMP    - https://npmjs.org/package/net-ping
-RAW     - https://npmjs.org/package/raw-socket
-VNC     - https://github.com/bgaff/vnc.js
+SSH             - https://github.com/mscdex/ssh2
+TELNET          - https://github.com/kanaka/websockify 
+SNMP            - https://github.com/calmh/node-snmp-native
+                - https://npmjs.org/package/net-snmp
+MIB-Parse-Lexer - https://github.com/PrimeEuler/MIB-Parser.js
+ICMP            - https://npmjs.org/package/net-ping
+RAW             - https://npmjs.org/package/raw-socket
+VNC             - https://github.com/bgaff/vnc.js
 ```
