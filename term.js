@@ -389,7 +389,7 @@ Terminal.prototype.open = function() {
     self.element.contentEditable = 'true';
     setTimeout(function() {
       self.element.contentEditable = 'inherit'; // 'false';
-    }, 1000);//extended to allow for copy/paste menu
+    }, 1000);//timeout is set just long enough to display right click copy/paste menu
   }, true);
 
   on(this.element, 'paste', function(ev) {
@@ -697,6 +697,7 @@ Terminal.prototype.bindMouse = function() {
 
   on(el, 'mousedown', function(ev) {
     if (!self.mouseEvents) return;
+
 
     // send the button
     sendButton(ev);
