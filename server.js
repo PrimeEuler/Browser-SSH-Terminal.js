@@ -4,28 +4,11 @@ var Connection = require('ssh2'),
 //https://github.com/techpines/express.io
 //https://github.com/mscdex/ssh2
 //https://github.com/chjj/tty.js/blob/master/static/term.js
-//http://www.gettingcirrius.com/2012/06/automating-creation-of-certificate.html
-//http://www.gettingcirrius.com/2012/06/securing-nodejs-and-express-with-ssl.html
 /*
 options = {
-    // Specify the key file for the server
-  key: fs.readFileSync('ssl/server/keys/server1.key'),
-  
-  // Specify the certificate file
-  cert: fs.readFileSync('ssl/server/certificates/server1.crt'),
-  
-  // Specify the Certificate Authority certificate
-  ca: fs.readFileSync('ssl/ca/ca.crt'),
-  
-  // This is where the magic happens in Node.  All previous
-  // steps simply setup SSL (except the CA).  By requesting
-  // the client provide a certificate, we are essentially
-  // authenticating the user.
-  requestCert: true,
-  
-  // If specified as "true", no unauthenticated traffic
-  // will make it to the route specified.
-  rejectUnauthorized: true
+    key: fs.readFileSync('./ssl/myServer.key'),
+    cert: fs.readFileSync('./ssl/myServer.crt'),
+    passphrase: 'password'
 }
 app = express().https(options).io()
 */
@@ -44,75 +27,99 @@ app.get('/', function (req, res) {
 
 app.io.route('host', function (req) {
     req.session.host = req.data
-    req.session.save(function () {
-        req.io.emit('get-username')
-    })
+    req.io.emit('req-username')
+
 })
 
-app.io.route('send-username', function (req) {
+app.io.route('res-username', function (req) {
     req.session.username = req.data
-    req.session.save(function () {
-        req.io.emit('get-password')
-    })
+    req.io.emit('req-password')
 })
 
 
-app.io.route('send-password', function (req) {
+app.io.route('res-password', function (req) {
     req.session.password = req.data
-    req.session.save(function () {
-        req.io.emit('create-term')
-    })
+    req.io.emit('create-term')
+
 })
 
 app.io.route('data', function (req) {
-    if (req.session.connectedtohost) {
+    if (req.session.stream.writable) {
         req.session.stream.write(req.data);
+    }
+    else {
+        req.io.emit('kill-term');
     }
 });
 
-app.io.route('create-ssh', function (req) {
-    var config = {
-        host: req.session.host,
-        port: 22,
-        username: req.session.username,
-        password: req.session.password,
-        tryKeyboard: true
-    }
+app.io.route('create-session', function (req) {
     var options = req.data;
 
-    var c = new Connection();
-    c.connect(config);
-    c.on('ready', function () {
-        console.log('Connection :: ready');
-        c.shell(function (err, stream) {
-            if (err) throw err;
-            req.session.stream = stream;
-            req.session.connectedtohost = true;
+    switch (options.Session) {
+        case 'telnet':
+            req.io.emit('kill-term', options.Session + ' protocol not supported yet.')
+            break;
+        case 'ping':
+            req.io.emit('kill-term', options.Session + ' protocol not supported yet.')
+            break;
+        case 'ssh':
+            var config = {
+                host: req.session.host,
+                port: 22,
+                username: req.session.username,
+                password: req.session.password,
+                tryKeyboard: false
+            }
 
-            stream.setWindow(options.Cols, options.Rows, 480, 640);
-
-            stream.on('data', function (data, extended) {
-                req.io.emit('data', (data + '').replace(/\n/g, "\r\n"));
+            var banner = '';
+            req.session.c = new Connection();
+            req.session.c.connect(config);
+            req.session.c.on('banner', function (message, language) {
+                banner = message;
             });
-
-            stream.on('end', function () {
-                console.log('Stream :: EOF');
-                req.session.connectedtohost = false;
+            req.session.c.on('error', function (err) {
+                console.log('Connection-Error :: ' + err);
+                req.io.emit('kill-term', err.toString());
             });
-
-            stream.on('close', function () {
-                console.log('Stream :: close');
-                req.session.connectedtohost = false;
-                c.end();
+            req.session.c.on('close', function (hadError) {
+                console.log('Connection-Close :: ' + hadError);
+                req.io.emit('kill-term', 'connection closed');
             });
-
-            stream.on('exit', function (code, signal) {
-                console.log('Stream :: exit :: code: ' + code + ', signal: ' + signal);
-                req.session.connectedtohost = false;
+            req.session.c.on('keyboard-interactive', function (name, instructions, instructionsLang, prompts, finish) {
+                console.log('Connection-Keyboard :: ' + prompts.toString());
             });
-        });
-    });
-})
+            req.session.c.on('ready', function () {
+                console.log('Connection :: ready');
+                req.io.emit('data', banner.replace(/\n/g, "\r\n"));
+                req.session.c.shell(function (err, stream) {
+                    if (err) { console.log(err); }
+                    req.session.stream = stream;
+                    req.session.stream.setWindow(options.Cols, options.Rows, 600, 800);
+                    req.session.stream.on('data', function (data, extended) {
+                        req.io.emit('data', data.toString());
+                    });
+                    req.session.stream.on('end', function () {
+                        console.log('Stream :: EOF');
+                    });
+                    req.session.stream.on('close', function () {
+                        console.log('Stream :: close');
+                    });
+                    req.session.stream.on('error', function () {
+                        console.log('Stream :: ERROR');
+                    });
+                    req.session.stream.on('exit', function (code, signal) {
+                        console.log('Stream :: exit :: code: ' + code + ', signal: ' + signal);
+                        req.session.c.end();
+                        req.session.c = null;
+                        req.session.stream = null;
+                    });
+                });
+            });
+            break;
+
+    }
+
+});
 
 
 app.listen(8080)
