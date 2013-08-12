@@ -1,4 +1,4 @@
-
+<html>
 <style>
   h1 {
     margin-bottom: 20px;
@@ -26,38 +26,184 @@
 
     var socket = io.connect();
     var cols=40;
-    var rows=100;
+    var rows=120;
     var term_count=0;
+    var term = new Terminal(rows, cols);
+    var state = 0;
+    var input_buffer = '';
+    var _promt = '>'
+    var config = {
+        host: '',
+        port: 22,
+        username: '',
+        password: '',
+        tryKeyboard: true
+    }
+    var Connection_Type = '';
+    var help = '\rAvailable commands:\r\n'
+            + '  ssh    \t Open a secure shell client connection \r\n'
+            + '  telnet \t Open a telnet connection \r\n'
+            + '  ping   \t Send echo messages \r\n'
+            + '  ?      \t Available commands \r\n';
+
+    function init() {
 
 
-    socket.emit('host', prompt('Host:'))
+        socket.on('req-password', function () {
 
-    socket.on('get-password', function () {
-        socket.emit('send-password', prompt('Password:'));
-    })
-
-    socket.on('get-username', function () {
-        socket.emit('send-username', prompt('Username:'));
-    })
-
-
-
-    socket.on('create-term', function () {
-        var term = new Terminal(rows, cols);
-        term_count++;
-        options = { Rows: rows, Cols: cols, Terms: term_count };
-        socket.emit('create-ssh', options);
-        term.on('data', function (data) {
-            socket.emit('data', data);
+            socket.emit('res-password', config.password);
         });
 
-        term.open();
+        socket.on('req-username', function () {
+
+            socket.emit('res-username', config.username);
+        });
+
+        socket.on('create-term', function () {
+            term_count++;
+            options = { Session: Connection_Type, Rows: rows, Cols: cols, Terms: term_count };
+            socket.emit('create-session', options);
+            term.write('\r\n');
+        });
 
         socket.on('data', function (data) {
+            state = 3; //remote session
             term.write(data);
         });
-    });
+
+        socket.on('kill-term', function (err) {
+            state = 0;
+            term.write('\r\n' + err); 
+            term.write('\r\n' + _promt); 
+        });
+
+
+
+
+            term.open();
+            term.write(help + _promt);
+            term.on('data', function (data) {
+
+                switch (state) {
+                    case 0:
+                        //local session
+                        switch (data.charCodeAt(0)) {
+                            case 63:
+                                term.write('\r\n' + help + _promt + _promt);
+                                //term.write(help);
+                            case 127:
+                                term.write('\x1b[D'); // right-arrow
+                                term.write('\x1b[J'); // CSI Ps J  Erase in Display (ED).
+                                input_buffer = input_buffer.substring(0, input_buffer.length - 1);
+                                break;
+                            case 13:
+                                //
+                                var args = input_buffer.split(" ")
+
+                                input_buffer = '';
+                                switch (args[0]) {
+                                    case 'ssh':
+                                        if (args[1] == null) {
+                                            term.write(data + '\x0c' + 'format: [command] [host]');
+                                        } else {
+                                            Connection_Type = args[0]
+                                            config.host = args[1];
+                                            term.write(data + '\x0c' + 'Username:');
+                                            state = 1; //Username
+                                        }
+                                        break;
+                                    case 'telnet':
+                                        if (args[1] == null) {
+                                            term.write(data + '\x0c' + 'format: [command] [host]');
+                                        } else {
+                                            Connection_Type = args[0]
+                                            config.host = args[1];
+                                            term.write(data + '\x0c' + 'Username:');
+                                            state = 1; //Username
+                                        }
+                                        break;
+                                    case 'ping':
+                                        if (args[1] == null) {
+                                            term.write(data + '\x0c' + 'format: [command] [host]');
+                                        } else {
+                                            Connection_Type = args[0]
+                                            config.host = args[1];
+                                            term.write(data + '\x0c' + 'Pinging ' + args[1]);
+                                            socket.emit('res-password', config.password);
+                                        }
+                                        break;
+                                    case '':
+                                        term.write(data + '\x0c' + _promt); // '\n', '\v', '\f'
+                                        break;
+                                    default:
+                                        term.write(data + '\x0c' + args[0] + ' is not a recognized command.\r\n');
+
+
+                                }
+                                break;
+                            default:
+                                term.write(data);
+                                input_buffer += data;
+                                break;
+                        }
+                        break;
+                    case 1:
+                        //get username
+                        switch (data.charCodeAt(0)) {
+                            case 13:
+                                config.username = input_buffer
+                                input_buffer = '';
+                                state = 2; //Password
+                                term.write('\r\x0c' + 'Password::');
+                            case 127:
+                                term.write('\x1b[D'); // right-arrow
+                                term.write('\x1b[J'); // CSI Ps J  Erase in Display (ED).
+                                input_buffer = input_buffer.substring(0, input_buffer.length - 1);
+                                break;
+                            default:
+                                term.write(data);
+                                input_buffer += data;
+                                break;
+                        }
+                        break;
+                    case 2:
+                        //get password
+                        switch (data.charCodeAt(0)) {
+                            case 13:
+                                config.password = input_buffer;
+                                input_buffer = '';
+                                state = 0; //local session
+                                term.write('\r\x0c' + 'Connecting via ' + Connection_Type + ' to ' + config.host + '...');
+                                socket.emit('host', config.host);
+                            case 127:
+                                term.write('\x1b[D'); // right-arrow
+                                term.write('\x1b[J'); // CSI Ps J  Erase in Display (ED).
+                                input_buffer = input_buffer.substring(0, input_buffer.length - 1);
+                                break;
+                            default:
+                                //term.write(data);
+                                input_buffer += data;
+                                break;
+                        }
+                        break;
+                    case 3:
+                        //Remote session
+                        socket.emit('data', data);
+                        break;
+                }
+
+            });
+
+
+
+
+
+    } 
+
 
 
 
 </script>
+<body bgcolor=grey  onload="init()">
+ </body>
+ </html>
