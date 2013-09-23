@@ -30,7 +30,7 @@ Todo:
 Fork:
 (Network management system) WEB-CLI session management and scripting of:
 SSH             - https://github.com/mscdex/ssh2
-TELNET          - https://github.com/kanaka/websockify 
+TELNET          - https://github.com/PrimeEuler/telnet-client.js
 SNMP            - https://github.com/calmh/node-snmp-native
                 - https://npmjs.org/package/net-snmp
 MIB-Parser-Lexer- https://github.com/PrimeEuler/MIB-Parser.js
